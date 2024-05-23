@@ -5,18 +5,23 @@ const routes: Record<string, Route> = {
   '': {
     loadComponent: () => import('src/app/pages/landing-page/landing-page.component').then(x => x.LandingPageComponent),
   },
-  'login': { loadComponent: () => import('src/app/spotify/login/login.component').then(x => x.LoginComponent) },
-  'logged-in': { loadComponent: () => import('src/app/spotify/logged-in/logged-in.component').then(x => x.LoggedInComponent) },
+  'login': { loadComponent: () => import('src/app/spotify/login/login-page/login-page.component').then(x => x.LoginPageComponent) },
   'queue-recommendation': { loadChildren: () => import('src/app/pages/queue-recommendation/queue-recommendation.module').then(x => x.QueueRecommendationModule) },
 }
 
 export type DefinedRoute = keyof typeof routes
 
-export const isDefinedRoute = (path: string | undefined | null): path is DefinedRoute => 
-  path === undefined || path === null
-    ? false
-    : Object.keys(routes).includes(path)
+export const isDefinedRoute = (path: string | undefined | null): path is DefinedRoute =>  {
+  if (path === undefined || path === null) {
+    return false
+  }
 
+  if (path === '**') {
+    return true
+  }
+
+  return Object.keys(routes).includes(path)
+}
 
 export const routesForRouter: Route[] = (() => {
   const keysOf = <Key  extends string|number|symbol> (input: Record<Key, unknown>): Key[] => {

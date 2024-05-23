@@ -1,20 +1,18 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { SpotifyAuth } from '../../spotify-auth.service';
 import { tap } from 'rxjs';
-import { SpotifyAuth } from '../spotify-auth.service';
 
 @Component({
-  selector: 'app-logged-in',
+  selector: 'app-login-handle-response',
   standalone: true,
   imports: [],
-  templateUrl: './logged-in.component.html',
-  styleUrl: './logged-in.component.scss'
+  template: '',
 })
-export class LoggedInComponent {
-
+export class LoginHandleResponseComponent {
   constructor(
-    private readonly spotify: SpotifyAuth,
-    private readonly router: Router,
+    spotify: SpotifyAuth,
+    router: Router,
   ) {
     spotify.onAuthorizationResponse(new URLSearchParams(window.location.search)).pipe(
       tap((response) => { if ('success' in response) {
@@ -23,5 +21,4 @@ export class LoggedInComponent {
       }}),
     ).subscribe()
   }
-
 }

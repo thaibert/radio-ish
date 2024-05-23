@@ -91,4 +91,4 @@ export class SpotifyAuth {
   }
 }
 
-const constructRedirectUri = () => `${window.location.origin}/logged-in`
+const constructRedirectUri = () => `${window.location.origin}/login`

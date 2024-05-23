@@ -1,0 +1,10 @@
+<p>login works!</p>
+
+@switch (state) {
+  @case (LoginState.DidNotRedirectYet) {
+    <app-login-do-redirect/>
+  }
+  @case (LoginState.ResponseReceived) {
+    <app-login-handle-response/>
+  }
+}
