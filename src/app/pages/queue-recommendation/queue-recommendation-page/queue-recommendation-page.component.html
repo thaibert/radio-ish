@@ -1,0 +1,34 @@
+<button (click)="refresh()">Refresh</button>
+
+<h3>Currently playing</h3>
+@if (currentlyPlaying | async; as currentlyPlaying) {
+    {{ currentlyPlaying.name }} - ({{ currentlyPlaying.artists[0].name }})
+} @else {
+  Loading...
+}
+
+<h3>Queue</h3>
+@if (queue | async; as queue) {
+  @for (track of queue; track track.id) {
+    <p>
+      {{ $index+1 }}. {{ track.name }} - ({{ track.artists[0].name }})
+    </p>
+  }
+} @else {
+  Loading...
+}
+
+<h2>Recommendation</h2>
+@if (queue | async) {
+  <button (click)="getRecommendations()">Get recommendations (for first 5...)</button>
+}
+
+@if (recommendations | async; as recommendations) {
+  @for (track of recommendations; track track.id) {
+    <p>
+      {{ $index+1 }}. {{ track.name }} - ({{ track.artists[0].name }})
+    </p>
+  }
+} @else {
+  <p>No recommendations yet. Click the button!</p>
+}
