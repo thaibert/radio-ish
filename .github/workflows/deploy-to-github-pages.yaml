@@ -17,7 +17,8 @@ jobs:
           node-version: 18.20.2
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - run: npm run build -- --base-href="/${{ github.event.repository.name }}/"
+      - run: cp dist/radio-ish/browser/index.html dist/radio-ish/browser/404.html
       - uses: actions/upload-pages-artifact@v3.0.1
         with:
           name: github-pages
