@@ -1,10 +1,11 @@
-name: Build node.js 
+name: Deploy to github pages
 
 on:
   push:
     branches: [ "trunk" ]
   pull_request:
     branches: [ "trunk" ]
+  workflow_dispatch: # Allows you to run this workflow manually
 
 jobs:
   build:
