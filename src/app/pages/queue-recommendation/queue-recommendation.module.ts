@@ -5,9 +5,11 @@ import { QueueRecommendationPageComponent } from "./queue-recommendation-page/qu
 import { EffectsModule } from "@ngrx/effects";
 import { StoreModule } from "@ngrx/store";
 import { QueueRecommendationEffects, QueueRecommendationFeature, queueRecommendationReducer } from "./store";
+import { AlbumArtPipe } from "./album-art.pipe";
 
 @NgModule({
     declarations: [
+        AlbumArtPipe,
         QueueRecommendationPageComponent,
     ],
     providers: [],

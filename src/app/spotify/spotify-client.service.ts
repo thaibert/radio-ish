@@ -2,7 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, of, share } from 'rxjs';
 
-export type ImageObject = unknown
+export type ImageObject = {
+  url: string,
+  width: number,
+  height: number,
+}
 
 export type SimplifiedArtistObject = {
   external_urls: unknown,

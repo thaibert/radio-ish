@@ -11,6 +11,7 @@
 @if (queue | async; as queue) {
   @for (track of queue; track track.id) {
     <p>
+      <img [src]="track | albumArt: 'smallest'">
       {{ $index+1 }}. {{ track.name }} - ({{ track.artists[0].name }})
     </p>
   }

@@ -45,8 +45,8 @@ export class QueueRecommendationSelectors {
 
   public static readonly selectedQueueForRecommendations = createSelector(featureSelector, state => {
     return state.queue
-    ?.filter((_, index) => index < 5)
-    .map(x => x.id) ?? []
+      ?.filter((_, index) => index < 5)
+      .map(x => x.id) ?? []
   })
 
   public static readonly recommendations = createSelector(featureSelector, state => {
