@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { SpotifyAuth } from '../../spotify-auth.service';
+import { SpotifyAuthz } from '../../spotify-authz.service';
 import { tap } from 'rxjs';
 
 @Component({
@@ -11,13 +11,13 @@ import { tap } from 'rxjs';
 })
 export class LoginHandleResponseComponent {
   constructor(
-    spotify: SpotifyAuth,
+    spotify: SpotifyAuthz,
     router: Router,
   ) {
     spotify.onAuthorizationResponse(new URLSearchParams(window.location.search)).pipe(
       tap((response) => { if ('success' in response) {
-        router.navigate([localStorage.getItem('_returnPath')])
-        localStorage.removeItem('_returnPath') 
+        router.navigate([sessionStorage.getItem('_returnPath')])
+        sessionStorage.removeItem('_returnPath')
       }}),
     ).subscribe()
   }

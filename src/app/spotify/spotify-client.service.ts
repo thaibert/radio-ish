@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, catchError, map, of, share } from 'rxjs';
+import { Observable, catchError, map, of, share, switchMap, tap } from 'rxjs';
+import { SpotifySessionManager } from './spotify-session-manager.service';
 
 export type ImageObject = {
   url: string,
@@ -91,6 +92,7 @@ export class SpotifyClient {
 
   constructor(
     private readonly http: HttpClient,
+    private readonly sessionManager: SpotifySessionManager,
   ) {}
 
   // TODO: Ok(...)|Error(...) types?
@@ -98,42 +100,21 @@ export class SpotifyClient {
     currently_playing: TrackObject,
     queue: TrackObject[],
   }>> {
-    return this.http.get<{
-      currently_playing: TrackObject,
-      queue: TrackObject[],
-    }>(`${this.SpotifyApiBaseUrl}/me/player/queue`, { headers: constructAuthorizationHeader() })
-    .pipe(
-      share(),
-      map(response => {
-        if (! ('queue' in response)) {
-          return { error: 'no queue present!' }
-        }
-        return { ok: response }
-      }),
-      catchError(err => of({error: err})),
-    )
-  }
-
-  private getRecommendationsSpotify(request: 
-    ({ seed_artists: string } | { seed_genres: string } | { seed_tracks: string })
-    & Partial<{
-
-    }>
-  ) {
-    const queryParams = new URLSearchParams(request).toString()
-    return this.http.get<{
-      seeds: RecommendationSeedObject[],
-      tracks: TrackObject[],
-    }>(`${this.SpotifyApiBaseUrl}/recommendations?${queryParams}`, { headers: constructAuthorizationHeader() })
-    .pipe(
-      share(),
-      map(response => {
-        if (! ('tracks' in response)) {
-          return { error: 'no recommendations given!' }
-        }
-        return { ok: response }
-      }),
-
+    return this.withAccessToken(accessToken =>
+      this.http.get<{
+        currently_playing: TrackObject,
+        queue: TrackObject[],
+      }>(`${this.SpotifyApiBaseUrl}/me/player/queue`, { headers: constructAuthorizationHeader(accessToken) })
+      .pipe(
+        share(),
+        map(response => {
+          if (! ('queue' in response)) {
+            return { error: 'no queue present!' }
+          }
+          return { ok: response }
+        }),
+        catchError(err => of({error: err})),
+      )
     )
   }
 
@@ -146,8 +127,37 @@ export class SpotifyClient {
       // .pipe(map(({seeds, tracks}) => ({seeds, tracks: tracks.filter((_, index) => index <= 5)})))
   }
 
+  private getRecommendationsSpotify(request: 
+    ({ seed_artists: string } | { seed_genres: string } | { seed_tracks: string })
+    & Partial<{
+
+    }>
+  ) {
+    const queryParams = new URLSearchParams(request).toString()
+    return this.withAccessToken(accessToken => this.http.get<{
+      seeds: RecommendationSeedObject[],
+      tracks: TrackObject[],
+      }>(`${this.SpotifyApiBaseUrl}/recommendations?${queryParams}`, { headers: constructAuthorizationHeader(accessToken) })
+      .pipe(
+        share(),
+        map(response => {
+          if (! ('tracks' in response)) {
+            return { error: 'no recommendations given!' }
+          }
+          return { ok: response }
+        }),
+      )
+    )
+  }
+
+  private withAccessToken<T>(generator: (accessToken: string) => Observable<T>): Observable<T> {
+    return this.sessionManager.getAccessToken().pipe(
+      switchMap(generator),
+    )
+  }
+
 }
 
-const constructAuthorizationHeader = () => ({
-  'Authorization': `Bearer ${sessionStorage.getItem('access_token')}`
-})
+const constructAuthorizationHeader = (accessToken: string) => ({
+  'Authorization': `Bearer ${accessToken}`
+  })

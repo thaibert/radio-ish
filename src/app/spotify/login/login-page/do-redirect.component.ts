@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { SpotifyAuth } from '../../spotify-auth.service';
+import { SpotifyAuthz } from '../../spotify-authz.service';
 
 @Component({
   selector: 'app-login-do-redirect',
@@ -11,9 +11,9 @@ import { SpotifyAuth } from '../../spotify-auth.service';
 export class LoginDoRedirectComponent {
   constructor(
     route: ActivatedRoute,
-    spotify: SpotifyAuth,
+    spotify: SpotifyAuthz,
   ) {
-    localStorage.setItem('_returnPath', route.snapshot.queryParams['returnPath'])
+    sessionStorage.setItem('_returnPath', route.snapshot.queryParams['returnPath'])
     spotify.authorize()
   }
 

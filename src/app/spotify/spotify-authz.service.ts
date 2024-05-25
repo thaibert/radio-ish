@@ -2,24 +2,26 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { generateRandomString, sha256, spotifyBase64encode } from './auth-utils';
 import { Observable, map, of, tap } from 'rxjs';
+import { SpotifySessionManager } from './spotify-session-manager.service';
 
 type AuthorizationResponse = {success: true} | {error: string}
 
 @Injectable({
   providedIn: 'root'
 })
-export class SpotifyAuth {
+export class SpotifyAuthz {
 
   // TODO: session/local storage management. What if not available?
 
   constructor(
     private readonly http: HttpClient,
+    private readonly sessionManager: SpotifySessionManager,
   ) {}
 
   public authorize(): void {
     (async () => {
       const code_verifier = generateRandomString(64)
-      localStorage.setItem('code_verifier', code_verifier)
+      sessionStorage.setItem('code_verifier', code_verifier)
       const code_challenge = spotifyBase64encode(await sha256(code_verifier))
   
       const client_id = '1a5bd89e7ec24bfa8b7277c907983033' // TODO env file
@@ -42,7 +44,7 @@ export class SpotifyAuth {
   }
 
   public onAuthorizationResponse(queryParams: URLSearchParams): Observable<AuthorizationResponse> {
-    // TODO: include state in authz calls
+    // TODO: include state in authorize calls
     type SpotifyAuthorizeResponse = {code: string/*, state: string*/} | {error: string/*, state: string*/}
     const onAuthorize = (response: SpotifyAuthorizeResponse): Observable<AuthorizationResponse> => {
       if ('error' in response) {
@@ -56,7 +58,7 @@ export class SpotifyAuth {
         code: response.code,
         redirect_uri: constructRedirectUri(),
         client_id: '1a5bd89e7ec24bfa8b7277c907983033',
-        code_verifier: localStorage.getItem('code_verifier') ?? '',
+        code_verifier: sessionStorage.getItem('code_verifier') ?? '',
       }
       const options = { headers: { 'content-type': 'application/x-www-form-urlencoded' } }
 
@@ -68,8 +70,8 @@ export class SpotifyAuth {
         refresh_token: string,
       }
       return this.http.post<SpotifyAccessTokenResponse>(url, new URLSearchParams(body), options).pipe(
-        tap(() => localStorage.removeItem('code_verifier')),
-        tap(response => sessionStorage.setItem('access_token', response.access_token)),
+        tap(() => sessionStorage.removeItem('code_verifier')),
+        tap(response => this.sessionManager.onAuthorizationResponse(response)),
         map(() => ({ success: true })),
       )
     }
@@ -87,7 +89,7 @@ export class SpotifyAuth {
   }
 
   public isAuthorized(): boolean {
-    return !! sessionStorage.getItem('access_token')
+    return !! sessionStorage.getItem('refresh_token')
   }
 }
 

@@ -1,10 +1,10 @@
 import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
 import { inject } from '@angular/core';
-import { SpotifyAuth } from 'src/app/spotify/spotify-auth.service';
+import { SpotifyAuthz } from 'src/app/spotify/spotify-authz.service';
 import { DefinedRoute, isDefinedRoute } from 'src/app/app.routes';
 
 export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean => {
-  const spotify = inject(SpotifyAuth)
+  const spotify = inject(SpotifyAuthz)
   const router =  inject(Router)
 
   const path = route.routeConfig?.path
