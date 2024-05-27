@@ -155,7 +155,9 @@ export class SpotifyClient {
       this.http.post<void>(
         `${this.SpotifyApiBaseUrl}/me/player/queue?uri=${trackUri}`,
         {},
-        { headers: constructAuthorizationHeader(accessToken) })
+        { headers: constructAuthorizationHeader(accessToken),
+          observe: 'response',
+         })
     )
   }
 

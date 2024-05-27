@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core"
 import { Actions, concatLatestFrom, createEffect, ofType } from "@ngrx/effects"
-import { Store, createAction, createFeatureSelector, createReducer, createSelector, on, props } from "@ngrx/store"
-import { catchError, filter, map, of, switchMap, tap } from "rxjs"
+import { Action, ActionCreator, Store, createAction, createFeatureSelector, createReducer, createSelector, on, props } from "@ngrx/store"
+import { catchError, delay, map, of, switchMap, tap } from "rxjs"
 import { SpotifyClient, TrackObject } from "src/app/spotify/spotify-client.service"
 
 export const QueueRecommendationFeature = 'queue-recommendation'
@@ -30,7 +30,10 @@ export class QueueRecommendationActions {
   public static readonly getRecommendationsFailure = createAction('[recommendations] failure: get recommendations', props<{error: unknown}>())
 
   public static readonly addToQueue = createAction('[queue] add to queue', props<{trackUri: string}>())
+  public static readonly addToQueueSuccess = createAction('[queue] success: add to queue')
+  public static readonly addToQueueFailure = createAction('[queue] failure: add to queue', props<{error: unknown}>())
 
+  static readonly delay = createAction('[util] delay', props<{delayMs: number, subsequent: Action | ActionCreator}>())
   private constructor() {}
 }
 
@@ -83,7 +86,7 @@ export const queueRecommendationReducer = createReducer(
 @Injectable()
 export class QueueRecommendationEffects {
   fetchQueue = createEffect(() => this.actions.pipe(
-    ofType(QueueRecommendationActions.getQueue),
+    ofType(QueueRecommendationActions.getQueue, QueueRecommendationActions.addToQueueSuccess),
     switchMap(() => this.spotify.getQueue().pipe(
       map(result => 'ok' in result
         ? QueueRecommendationActions.getQueueSuccess({response: { queue: result.ok.queue, currentlyPlaying: result.ok.currently_playing }})
@@ -107,17 +110,38 @@ export class QueueRecommendationEffects {
 
   addToQueue = createEffect(() => this.actions.pipe(
     ofType(QueueRecommendationActions.addToQueue),
-    switchMap(action => this.spotify.addToQueue(action.trackUri))
-  ), {dispatch: false})
+    switchMap(action => this.spotify.addToQueue(action.trackUri).pipe(
+      // Delaying is necessary because Spotify provides no guarantee that concurrent
+      //   or nearly-concurrent requests for the queue will behave nicely.
+      // It turns out to be necessary; sometimes, the returned queue will be `null`
+      //   if we don't delay here.
+      map(result => result.status === 204
+        ? QueueRecommendationActions.delay({delayMs: 500, subsequent: QueueRecommendationActions.addToQueueSuccess()})
+        : QueueRecommendationActions.addToQueueFailure({error: result})
+      )
+    )),
+  ))
 
   reportErrors = createEffect(() => this.actions.pipe(
     ofType(
       QueueRecommendationActions.getRecommendationsFailure,
       QueueRecommendationActions.getQueueFailure,
+      QueueRecommendationActions.addToQueueFailure,
     ),
-    // filter(action => 'error' in action),
     tap(action => console.error(`Error from action '${action.type}':`, action.error))
   ), {dispatch: false})
+
+  delay = createEffect(() => this.actions.pipe(
+    ofType(QueueRecommendationActions.delay),
+    switchMap(({delayMs, subsequent}) => {
+      const definitelyAnAction = typeof subsequent === 'function'
+        ? subsequent() as Action
+        : subsequent
+      return of(definitelyAnAction).pipe(
+        delay(delayMs),
+      )
+    })
+  ))
 
   constructor(
     private readonly actions: Actions,
