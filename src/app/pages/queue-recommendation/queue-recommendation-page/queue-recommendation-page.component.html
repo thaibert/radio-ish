@@ -1,35 +1,29 @@
 <button (click)="refresh()">Refresh</button>
 
-<h3>Currently playing</h3>
-@if (currentlyPlaying | async; as currentlyPlaying) {
-    {{ currentlyPlaying.name }} - ({{ currentlyPlaying.artists[0].name }})
-} @else {
-  Loading...
-}
+<div class="page">
+  <div class="column left song-list">
+    @for (song of currentAndFutureSongs | async; track $index) {
+      <div class="song-list-entry">
+        <app-song [song]="song"></app-song>
+      </div>
+    }
+  </div>
 
-<h3>Queue</h3>
-@if (queue | async; as queue) {
-  @for (track of queue; track track.id) {
-    <p>
-      <img [src]="track | albumArt: 'smallest'">
-      {{ $index+1 }}. {{ track.name }} - ({{ track.artists[0].name }})
-    </p>
-  }
-} @else {
-  Loading...
-}
-
-<h2>Recommendation</h2>
-@if (queue | async) {
-  <button (click)="getRecommendations()">Get recommendations (for first 5...)</button>
-}
-
-@if (recommendations | async; as recommendations) {
-  @for (track of recommendations; track track.id) {
-    <p>
-      {{ $index+1 }}. {{ track.name }} - ({{ track.artists[0].name }})
-    </p>
-  }
-} @else {
-  <p>No recommendations yet. Click the button!</p>
-}
+  <div class="middle-button">
+    <button (click)="getRecommendations()"> ==== Recommend! ===> </button>
+  </div>
+  
+  <div class="column right song-list">
+    @for (recommendation of recommendations | async; track $index) {
+      <div class="song-list-entry">
+        <app-song [song]="recommendation"></app-song>
+        <app-add-to-queue [song]="recommendation"></app-add-to-queue>
+      </div>
+    } @empty {
+      <div class="empty">
+        * chirp *
+      </div>
+    }
+  </div>
+  
+</div>

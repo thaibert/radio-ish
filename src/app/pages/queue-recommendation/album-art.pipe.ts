@@ -4,6 +4,7 @@ import { TrackObject } from "src/app/spotify/spotify-client.service";
 
 @Pipe({
   name: 'albumArt',
+  standalone: true,
 })
 export class AlbumArtPipe implements PipeTransform {
   transform(track: TrackObject, targetSize: 'smallest' | 'largest'): string {

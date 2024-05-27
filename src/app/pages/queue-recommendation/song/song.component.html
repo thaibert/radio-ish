@@ -1,0 +1,14 @@
+
+<div class="song">
+  <div class="album-art">
+    <img [src]="song | albumArt: 'smallest'" />
+  </div>
+  <div class="metadata">
+    <p class="song-title">
+      {{ song.name }}
+    </p>
+    <p class="song-artists">
+      {{ song.artists[0].name }}
+    </p>    
+  </div>
+</div>

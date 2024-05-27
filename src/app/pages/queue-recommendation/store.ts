@@ -29,12 +29,21 @@ export class QueueRecommendationActions {
   public static readonly getRecommendationsSuccess = createAction('[recommendations] success: get recommendations', props<{recommendations: TrackObject[]}>())
   public static readonly getRecommendationsFailure = createAction('[recommendations] failure: get recommendations', props<{error: unknown}>())
 
+  public static readonly addToQueue = createAction('[queue] add to queue', props<{trackUri: string}>())
+
   private constructor() {}
 }
 
 /* ==== SELECTORS ==== */
 const featureSelector = createFeatureSelector<State>(QueueRecommendationFeature)
 export class QueueRecommendationSelectors {
+  public static readonly currentAndFutureSongs = createSelector(featureSelector, state => {
+    return [
+      ...(state.currentlyPlaying ? [state.currentlyPlaying] : []),
+      ...state.queue ?? [],
+    ]
+  })
+
   public static readonly currentlyPlaying = createSelector(featureSelector, state => {
     return state.currentlyPlaying
   })
@@ -95,6 +104,11 @@ export class QueueRecommendationEffects {
       catchError(err => of(QueueRecommendationActions.getRecommendationsFailure({error: err})))
     ))
   ))
+
+  addToQueue = createEffect(() => this.actions.pipe(
+    ofType(QueueRecommendationActions.addToQueue),
+    switchMap(action => this.spotify.addToQueue(action.trackUri))
+  ), {dispatch: false})
 
   reportErrors = createEffect(() => this.actions.pipe(
     ofType(

@@ -8,8 +8,8 @@ import { QueueRecommendationActions, QueueRecommendationSelectors } from '../sto
   styleUrl: './queue-recommendation-page.component.scss'
 })
 export class QueueRecommendationPageComponent {
-  currentlyPlaying = this.store.select(QueueRecommendationSelectors.currentlyPlaying)
-  queue = this.store.select(QueueRecommendationSelectors.queue)
+  currentAndFutureSongs = this.store.select(QueueRecommendationSelectors.currentAndFutureSongs)
+  // queue = this.store.select(QueueRecommendationSelectors.queue)
   recommendations = this.store.select(QueueRecommendationSelectors.recommendations)
 
   constructor(

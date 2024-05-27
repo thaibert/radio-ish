@@ -150,6 +150,15 @@ export class SpotifyClient {
     )
   }
 
+  public addToQueue(trackUri: string) {
+    return this.withAccessToken(accessToken =>
+      this.http.post<void>(
+        `${this.SpotifyApiBaseUrl}/me/player/queue?uri=${trackUri}`,
+        {},
+        { headers: constructAuthorizationHeader(accessToken) })
+    )
+  }
+
   private withAccessToken<T>(generator: (accessToken: string) => Observable<T>): Observable<T> {
     return this.sessionManager.getAccessToken().pipe(
       switchMap(generator),

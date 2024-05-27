@@ -1,0 +1,40 @@
+.song {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+.album-art {
+  margin-right: 15px;
+  img {
+    border-radius: 5px;
+    
+    // force aspect ratio
+    width: auto;
+    height : auto;
+    max-height: 100%;
+    max-width: 100%;
+  }
+}
+
+.metadata {
+  display: flex;
+  flex-direction: column;
+  align-content: space-evenly;
+}
+
+.song-title {
+  font-size: medium;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.song-artists {
+  font-size: small;
+  text-overflow: ellipsis;
+  color: #a4a4a4;
+  margin: 0;
+  margin-top: 5px;
+}
