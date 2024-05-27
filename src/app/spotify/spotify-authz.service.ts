@@ -25,7 +25,14 @@ export class SpotifyAuthz {
       const code_challenge = spotifyBase64encode(await sha256(code_verifier))
   
       const client_id = '1a5bd89e7ec24bfa8b7277c907983033' // TODO env file
-      const scope = 'user-read-currently-playing user-read-playback-state' // TODO parameterise this out
+      const scope = [
+        'user-read-currently-playing',
+        'user-read-playback-state',
+
+        'streaming',
+        'user-read-email',
+        'user-read-private',
+       ].join(' ') // TODO parameterise this out
   
       const url = new URL('https://accounts.spotify.com/authorize')
       const params = {
