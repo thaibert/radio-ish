@@ -1,3 +1,4 @@
+import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { Injectable } from "@angular/core"
 import { Actions, concatLatestFrom, createEffect, ofType } from "@ngrx/effects"
 import { Action, ActionCreator, Store, createAction, createFeatureSelector, createReducer, createSelector, on, props } from "@ngrx/store"
@@ -10,13 +11,19 @@ export const QueueRecommendationFeature = 'queue-recommendation'
 type State = {
   currentlyPlaying: TrackObject | undefined,
   queue: TrackObject[] | undefined,
-  recommendations: TrackObject[] | undefined
+  recommendations: TrackObject[] | undefined,
+  // TODO: delimiter<Top|Bottom>
+  // TODO: associate with a song id as well to handle songs finishing?
+  intervalTop: number,
+  intervalBottom: number,
 }
 
 const initialState: State = {
   currentlyPlaying: undefined,
   queue: undefined,
   recommendations: undefined,
+  intervalTop: 0,
+  intervalBottom: 5,
 }
 
 /* ==== ACTIONS ==== */
@@ -33,6 +40,9 @@ export class QueueRecommendationActions {
   public static readonly addToQueueSuccess = createAction('[queue] success: add to queue')
   public static readonly addToQueueFailure = createAction('[queue] failure: add to queue', props<{error: unknown}>())
 
+  public static readonly moveTopInterval = createAction('[interval] move top', props<{toIndex: number}>())
+  public static readonly moveBottomInterval = createAction('[interval] move bottom', props<{toIndex: number}>())
+
   static readonly delay = createAction('[util] delay', props<{delayMs: number, subsequent: Action | ActionCreator}>())
   private constructor() {}
 }
@@ -41,10 +51,28 @@ export class QueueRecommendationActions {
 const featureSelector = createFeatureSelector<State>(QueueRecommendationFeature)
 export class QueueRecommendationSelectors {
   public static readonly currentAndFutureSongs = createSelector(featureSelector, state => {
-    return [
+    const songs = [
       ...(state.currentlyPlaying ? [state.currentlyPlaying] : []),
       ...state.queue ?? [],
     ]
+    
+    if (state.intervalBottom < state.intervalTop) {
+      console.warn(`Bottom (${state.intervalBottom}) higher up than top (${state.intervalTop})!!`)
+    }
+    return [
+      ...songs.slice(0, state.intervalTop),
+      { id: 'top', marker: 'top' },
+      ...songs.slice(state.intervalTop, state.intervalBottom),
+      { id: 'bottom', marker: 'bottom' },
+      ...songs.slice(state.intervalBottom, undefined),
+    ]
+  })
+
+  public static readonly intervalInside = createSelector(featureSelector, state => {
+    return {
+      top: state.intervalTop,
+      bottom: state.intervalBottom,
+    }
   })
 
   public static readonly currentlyPlaying = createSelector(featureSelector, state => {
@@ -79,6 +107,14 @@ export const queueRecommendationReducer = createReducer(
   on(QueueRecommendationActions.getRecommendationsSuccess, (state, action) => ({
     ...state,
     recommendations: action.recommendations,
+  })),
+  on(QueueRecommendationActions.moveTopInterval, (state, action) => ({
+    ...state,
+    intervalTop: action.toIndex,
+  })),
+  on(QueueRecommendationActions.moveBottomInterval, (state, action) => ({
+    ...state,
+    intervalBottom: action.toIndex,
   })),
 )
 

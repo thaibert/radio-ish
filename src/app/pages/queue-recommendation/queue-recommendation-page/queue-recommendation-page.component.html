@@ -1,11 +1,36 @@
 <button (click)="refresh()">Refresh</button>
 
 <div class="page">
-  <div class="column left song-list">
-    @for (song of currentAndFutureSongs | async; track $index) {
-      <div class="song-list-entry">
-        <app-song [song]="song"></app-song>
-      </div>
+  <div class="column left song-list"
+       cdkDropList
+       (cdkDropListDropped)="drop($event)"
+       [cdkDropListSortPredicate]="createSortPredicate()"
+  >
+    @for (entry of currentAndFutureSongs | async; track entry.id) {
+        @if (entry | hasField: 'marker') {
+          @if (entry; as marker) {
+            <div class="separator draggable"
+                 style="width: 100%; height: 20px;"
+                 [style]="{'background-color': marker.marker === 'top' ? 'cadetblue' : 'coral'}"
+                 cdkDrag
+                 [cdkDragData]="marker.marker"
+            >
+            </div>
+          }
+        } @else {
+          @if (entry; as song) {
+            <div class="song-list-entry">
+
+              @if (intervalInside | async; as intervalInside) {
+                <app-song [song]="song"
+                          [enabled]="intervalInside.top <= $index && $index <= intervalInside.bottom"
+                          cdkDrag
+                          cdkDragDisabled
+                />
+              }
+            </div>
+          }
+        }
     }
   </div>
 
@@ -14,7 +39,7 @@
   </div>
   
   <div class="column right song-list">
-    @for (recommendation of recommendations | async; track $index) {
+    @for (recommendation of recommendations | async; track recommendation.id) {
       <div class="song-list-entry">
         <app-song [song]="recommendation"></app-song>
         <app-add-to-queue [song]="recommendation"></app-add-to-queue>

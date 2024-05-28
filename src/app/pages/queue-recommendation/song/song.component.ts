@@ -11,4 +11,5 @@ import { AlbumArtPipe } from '../album-art.pipe';
 })
 export class SongComponent {
   @Input({required: true}) song!: TrackObject
+  @Input() enabled: boolean = true
 }

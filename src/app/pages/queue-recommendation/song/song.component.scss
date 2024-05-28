@@ -1,9 +1,15 @@
+.container {
+  display: block;
+  width: 100%;
+}
+
 .song {
   display: flex;
   align-items: center;
   justify-content: left;
   margin-left: 15px;
   margin-right: 15px;
+  flex-shrink: 0;
 }
 
 .album-art {
@@ -37,4 +43,9 @@
   color: #a4a4a4;
   margin: 0;
   margin-top: 5px;
+}
+
+.disabled {
+  filter: brightness(0.42);
+  text-decoration: line-through;
 }

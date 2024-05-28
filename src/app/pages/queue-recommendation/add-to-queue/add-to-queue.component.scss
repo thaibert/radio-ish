@@ -3,3 +3,21 @@
   justify-content: center;
   align-content: center;
 }
+
+.icon-button {
+  cursor: pointer;
+
+  // https://isotropic.co/tool/hex-color-to-css-filter/
+  filter: invert(100%) sepia(0%) saturate(7427%) hue-rotate(94deg) brightness(123%) contrast(100%); // #ffffff
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+  &:active {
+    filter: invert(49%) sepia(98%) saturate(0%) hue-rotate(307deg) brightness(102%) contrast(95%); // #9a9a9a
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}

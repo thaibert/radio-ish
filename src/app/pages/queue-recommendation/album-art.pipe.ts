@@ -1,7 +1,6 @@
 import { Pipe, PipeTransform } from "@angular/core";
 import { TrackObject } from "src/app/spotify/spotify-client.service";
 
-
 @Pipe({
   name: 'albumArt',
   standalone: true,

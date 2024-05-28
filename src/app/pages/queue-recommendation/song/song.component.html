@@ -1,14 +1,16 @@
 
-<div class="song">
-  <div class="album-art">
-    <img [src]="song | albumArt: 'smallest'" />
-  </div>
-  <div class="metadata">
-    <p class="song-title">
-      {{ song.name }}
-    </p>
-    <p class="song-artists">
-      {{ song.artists[0].name }}
-    </p>    
+<div class="container">
+  <div class="song">
+    <div class="album-art" [class.disabled]="! enabled">
+      <img [src]="song | albumArt: 'smallest'" />
+    </div>
+    <div class="metadata">
+      <p class="song-title" [class.disabled]="! enabled">
+        {{ song.name }}
+      </p>
+      <p class="song-artists" [class.disabled]="! enabled">
+        {{ song.artists[0].name }}
+      </p>
+    </div>
   </div>
 </div>
