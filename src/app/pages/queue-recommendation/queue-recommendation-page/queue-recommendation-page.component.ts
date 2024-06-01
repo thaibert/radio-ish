@@ -14,6 +14,7 @@ export class QueueRecommendationPageComponent {
   currentAndFutureSongs = this.store.select(QueueRecommendationSelectors.currentAndFutureSongs)
   intervalInside = this.store.select(QueueRecommendationSelectors.intervalInside)
   recommendations = this.store.select(QueueRecommendationSelectors.recommendations)
+  currentlyPlaying = this.store.select(QueueRecommendationSelectors.currentlyPlaying)
 
   private _currentAndFutureSongs: (TrackObject | {id: string, marker: string})[]
 

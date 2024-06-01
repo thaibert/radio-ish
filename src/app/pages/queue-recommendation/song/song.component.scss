@@ -49,3 +49,37 @@
   filter: brightness(0.42);
   text-decoration: line-through;
 }
+
+.playing {
+  filter: brightness(0.8);
+}
+
+.img-overlay {
+  position: relative;
+  display: inline-block; /* <= shrinks container to image size */
+  // transition: transform 150ms ease-in-out;
+}
+
+.img-overlay img { /* <= optional, for responsiveness */
+   display: block;
+   max-width: 100%;
+   height: auto;
+}
+
+.img-overlay svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  transform-origin: center;
+  animation: spin 2s linear infinite;
+}

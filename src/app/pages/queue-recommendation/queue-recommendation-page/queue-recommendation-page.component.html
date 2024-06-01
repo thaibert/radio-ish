@@ -9,24 +9,27 @@
     @for (entry of currentAndFutureSongs | async; track entry.id) {
         @if (entry | hasField: 'marker') {
           @if (entry; as marker) {
-            <div class="separator draggable"
-                 style="width: 100%; height: 20px;"
-                 [style]="{'background-color': marker.marker === 'top' ? 'cadetblue' : 'coral'}"
+            <div class="separator"
                  cdkDrag
                  [cdkDragData]="marker.marker"
             >
+              <div class="separator-handle draggable" cdkDragHandle>
+                <div style="text-align: center; line-height: 30px;">{{ marker.marker === 'top' ? 'vvvv' : '^^^^' }}</div>
+              </div>
             </div>
           }
         } @else {
           @if (entry; as song) {
             <div class="song-list-entry">
-
               @if (intervalInside | async; as intervalInside) {
-                <app-song [song]="song"
-                          [enabled]="intervalInside.top <= $index && $index <= intervalInside.bottom"
-                          cdkDrag
-                          cdkDragDisabled
-                />
+                @if (currentlyPlaying | async; as currentlyPlaying) {
+                  <app-song [song]="song"
+                            [enabled]="intervalInside.top <= $index && $index <= intervalInside.bottom"
+                            [playing]="song.id === currentlyPlaying.song?.id"
+                            cdkDrag
+                            cdkDragDisabled
+                  />
+                }
               }
             </div>
           }

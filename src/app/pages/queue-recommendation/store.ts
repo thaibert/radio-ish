@@ -51,6 +51,10 @@ export class QueueRecommendationActions {
 const featureSelector = createFeatureSelector<State>(QueueRecommendationFeature)
 export class QueueRecommendationSelectors {
 
+  public static readonly currentlyPlaying = createSelector(featureSelector, state => {
+    return {song: state.currentlyPlaying}
+  })
+
   private  static readonly allSongs = createSelector(featureSelector, state => {
     return [
       ...(state.currentlyPlaying ? [state.currentlyPlaying] : []),

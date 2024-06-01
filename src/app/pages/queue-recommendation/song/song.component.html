@@ -1,8 +1,18 @@
 
 <div class="container">
   <div class="song">
-    <div class="album-art" [class.disabled]="! enabled">
-      <img [src]="song | albumArt: 'smallest'" />
+    <div class="album-art" [class.disabled]="! enabled" [class.playing]="playing">
+      <div class="img-overlay">
+        @if (playing) {
+          <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+            <circle class="spin" cx="400" cy="400" fill="none"
+              r="200" stroke-width="50" stroke="#1DB954"
+              stroke-dasharray="700 1400"
+              stroke-linecap="round" />
+          </svg>
+        }
+        <img [src]="song | albumArt: 'smallest'" />  
+      </div>
     </div>
     <div class="metadata">
       <p class="song-title" [class.disabled]="! enabled">
