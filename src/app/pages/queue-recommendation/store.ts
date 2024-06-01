@@ -50,21 +50,24 @@ export class QueueRecommendationActions {
 /* ==== SELECTORS ==== */
 const featureSelector = createFeatureSelector<State>(QueueRecommendationFeature)
 export class QueueRecommendationSelectors {
-  public static readonly currentAndFutureSongs = createSelector(featureSelector, state => {
-    const songs = [
+
+  private  static readonly allSongs = createSelector(featureSelector, state => {
+    return [
       ...(state.currentlyPlaying ? [state.currentlyPlaying] : []),
       ...state.queue ?? [],
     ]
-    
+  })
+
+  public static readonly currentAndFutureSongs = createSelector(featureSelector, this.allSongs, (state, allSongs) => {    
     if (state.intervalBottom < state.intervalTop) {
       console.warn(`Bottom (${state.intervalBottom}) higher up than top (${state.intervalTop})!!`)
     }
     return [
-      ...songs.slice(0, state.intervalTop),
+      ...allSongs.slice(0, state.intervalTop),
       { id: 'top', marker: 'top' },
-      ...songs.slice(state.intervalTop, state.intervalBottom),
+      ...allSongs.slice(state.intervalTop, state.intervalBottom),
       { id: 'bottom', marker: 'bottom' },
-      ...songs.slice(state.intervalBottom, undefined),
+      ...allSongs.slice(state.intervalBottom, undefined),
     ]
   })
 
@@ -75,18 +78,10 @@ export class QueueRecommendationSelectors {
     }
   })
 
-  public static readonly currentlyPlaying = createSelector(featureSelector, state => {
-    return state.currentlyPlaying
-  })
-
-  public static readonly queue = createSelector(featureSelector, state => {
-    return state.queue
-  })
-
-  public static readonly selectedQueueForRecommendations = createSelector(featureSelector, state => {
-    return state.queue
-      ?.filter((_, index) => index < 5)
-      .map(x => x.id) ?? []
+  public static readonly selectedQueueForRecommendations = createSelector(featureSelector, this.allSongs, (state, allSongs) => {
+    return allSongs
+      .map(({id}) => id)
+      .slice(state.intervalTop, state.intervalBottom)
   })
 
   public static readonly recommendations = createSelector(featureSelector, state => {

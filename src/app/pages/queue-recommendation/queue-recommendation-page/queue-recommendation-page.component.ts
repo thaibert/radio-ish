@@ -48,18 +48,23 @@ export class QueueRecommendationPageComponent {
   }
 
   createSortPredicate(): (index: number, item: CdkDrag<unknown>) => boolean {
-    // TODO
-    return (index: number, item: CdkDrag<unknown>) => {
+    return (index: number, item: CdkDrag<unknown>): boolean => {
       const marker = item.data
-      if (! (marker === 'top' || marker === 'bottom')) { return false }
-  
-      if (marker === 'bottom') {
-        return true
+
+      if (marker !== 'top' && marker !== 'bottom') { return false }
+
+      switch (marker) {
+        case 'top': {
+          const bottomElement = this._currentAndFutureSongs.find(({id}) => id === 'bottom')
+          const bottomIndex = this._currentAndFutureSongs.indexOf(bottomElement!)
+          return index < bottomIndex && Math.abs(index-bottomIndex) <= 6
+        }
+        case 'bottom': {
+          const topElement = this._currentAndFutureSongs.find(({id}) => id === 'top')
+          const topIndex = this._currentAndFutureSongs.indexOf(topElement!)
+          return topIndex < index && Math.abs(index-topIndex) <= 6 
+        }
       }
-  
-      const bottomElement = this._currentAndFutureSongs.find(x => x.id === 'bottom')
-      const bottomIndex = this._currentAndFutureSongs.indexOf(bottomElement!)
-      return index < bottomIndex  
     }
   }
 
