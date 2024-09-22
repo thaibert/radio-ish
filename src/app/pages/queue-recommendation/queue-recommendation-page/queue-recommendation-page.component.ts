@@ -49,6 +49,7 @@ export class QueueRecommendationPageComponent {
   }
 
   createSortPredicate(): (index: number, item: CdkDrag<unknown>) => boolean {
+    // return () => true
     return (index: number, item: CdkDrag<unknown>): boolean => {
       const marker = item.data
 
@@ -58,12 +59,12 @@ export class QueueRecommendationPageComponent {
         case 'top': {
           const bottomElement = this._currentAndFutureSongs.find(({id}) => id === 'bottom')
           const bottomIndex = this._currentAndFutureSongs.indexOf(bottomElement!)
-          return index < bottomIndex && Math.abs(index-bottomIndex) <= 6
+          return index < bottomIndex
         }
         case 'bottom': {
           const topElement = this._currentAndFutureSongs.find(({id}) => id === 'top')
           const topIndex = this._currentAndFutureSongs.indexOf(topElement!)
-          return topIndex < index && Math.abs(index-topIndex) <= 6 
+          return topIndex < index
         }
       }
     }

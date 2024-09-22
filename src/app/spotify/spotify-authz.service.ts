@@ -26,6 +26,7 @@ export class SpotifyAuthz {
   
       const client_id = '1a5bd89e7ec24bfa8b7277c907983033' // TODO env file
       const scope = [ // TODO parameterise this out
+        'user-read-recently-played',
         'user-read-currently-playing',
         'user-read-playback-state',
         'user-modify-playback-state',

@@ -150,7 +150,7 @@ export class QueueRecommendationEffects {
       //   or nearly-concurrent requests for the queue will behave nicely.
       // It turns out to be necessary; sometimes, the returned queue will be `null`
       //   if we don't delay here.
-      map(result => result.status === 204
+      map(result => 'ok' in result
         ? QueueRecommendationActions.delay({delayMs: 500, subsequent: QueueRecommendationActions.addToQueueSuccess()})
         : QueueRecommendationActions.addToQueueFailure({error: result})
       )

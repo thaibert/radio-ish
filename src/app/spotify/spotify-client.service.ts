@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, catchError, map, of, share, switchMap, tap } from 'rxjs';
+import { Observable, catchError, map, of, share, switchMap, combineLatest } from 'rxjs';
 import { SpotifySessionManager } from './spotify-session-manager.service';
 
 export type ImageObject = {
@@ -122,17 +122,37 @@ export class SpotifyClient {
     seeds: RecommendationSeedObject[],
     tracks: TrackObject[],
   }>> {
-    // TODO: proper strategy for > 5 tracks.
-    return this.getRecommendationsSpotify({seed_tracks: seedTracks.join(',')})
-      // .pipe(map(({seeds, tracks}) => ({seeds, tracks: tracks.filter((_, index) => index <= 5)})))
+    const buckets = Math.ceil(seedTracks.length / 5) // Spotify allows at most 5 seeds for recommendations
+
+    return combineLatest(
+      new Array<number>(buckets).fill(0)
+        .map((_, bucket) => seedTracks.filter((_, i) => i % buckets === bucket))
+        .map(seeds => this.getRecommendationsSpotify({seed_tracks: seeds.join(',')}))
+    ).pipe(
+      map(result => result.reduce((acc, curr) => {
+        if ("error" in acc || "error" in curr) {
+          const errors = []
+          if ("error" in acc) errors.push(acc.error)
+          if ("error" in curr) errors.push(curr.error)
+            console.log("got errors: ", errors)
+          return { error: errors.join("; ") }
+        }
+        return {
+          ok: {
+            seeds: merge(acc.ok.seeds, curr.ok.seeds),
+            tracks: merge(acc.ok.tracks, curr.ok.tracks),
+          }
+        }
+      })),
+    )
   }
 
-  private getRecommendationsSpotify(request: 
-    ({ seed_artists: string } | { seed_genres: string } | { seed_tracks: string })
-    & Partial<{
-
-    }>
-  ) {
+  private getRecommendationsSpotify(
+    request: ({ seed_artists: string } | { seed_genres: string } | { seed_tracks: string }) & Partial<{}>
+  ): Observable<Result<{
+    seeds: RecommendationSeedObject[],
+    tracks: TrackObject[],
+  }>> {
     const queryParams = new URLSearchParams(request).toString()
     return this.withAccessToken(accessToken => this.http.get<{
       seeds: RecommendationSeedObject[],
@@ -150,14 +170,24 @@ export class SpotifyClient {
     )
   }
 
-  public addToQueue(trackUri: string) {
+// TODO: getQueue / getPreviouslyPlayed
+
+  public addToQueue(trackUri: string): Observable<Result<void>> {
     return this.withAccessToken(accessToken =>
-      this.http.post<void>(
+      this.http.post(
         `${this.SpotifyApiBaseUrl}/me/player/queue?uri=${trackUri}`,
         {},
-        { headers: constructAuthorizationHeader(accessToken),
+        {
+          headers: constructAuthorizationHeader(accessToken),
           observe: 'response',
-         })
+          responseType: 'text',
+        })
+    ).pipe(
+      share(),
+      map(response => response.status === 204 || response.status === 200 // Spotify returns 200, not 204 as documented...
+        ? { ok: undefined }
+        : { error: `could not add to queue: ${response.body}` }
+      ),
     )
   }
 
@@ -166,9 +196,19 @@ export class SpotifyClient {
       switchMap(generator),
     )
   }
-
 }
 
 const constructAuthorizationHeader = (accessToken: string) => ({
   'Authorization': `Bearer ${accessToken}`
-  })
+})
+
+const merge = <T>(xs: T[], ys: T[]): T[] => {
+  const zip = (larger: T[], smaller: T[]): T[][] =>
+    larger.map((_, i) => smaller[i] !== undefined
+      ? [larger[i], smaller[i]]
+      : [larger[i]]
+  )
+  return xs.length >= ys.length
+    ? zip(xs, ys).flat()
+    : zip(ys, xs).flat()
+}
